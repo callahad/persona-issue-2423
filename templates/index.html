@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Mozilla Persona Example</title>
+  </head>
+  <body>
+    <p>You are currently logged in as {{ session.email or "Nobody" }}</p>
+    {% if session.email %}
+    <p>You can <a href="#" id="signout">Sign Out</a></p>
+    {% else %}
+    <p>You can <a href="#" id="signin">Sign In</a></p>
+    {% endif %}
+
+    <script type="text/javascript" src="/static/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="http://login.persona.org/include.js"></script>
+    <script type="text/javascript">
+
+      {% if session.email %}
+        var currentUser = '{{ session.email }}';
+      {% else %}
+        var currentUser = null;
+      {% endif %}
+
+      navigator.id.watch({
+        loggedInEmail: currentUser,
+        onlogin: function(assertion) {
+          alert("onlogin invoked");
+          var form = $('<form/>', {
+            method: 'post',
+            action: '/login'
+          });
+          $('<input/>', {
+            type: 'hidden',
+            name: 'assertion',
+            value: assertion
+          }).appendTo(form);
+          form.appendTo(document.body).submit();
+        },
+        onlogout: function() {
+          alert("onlogout invoked");
+          var form = $('<form/>', {
+            method: 'post',
+            action: '/logout'
+          });
+          form.appendTo(document.body).submit();
+        }
+      });
+
+
+      /* Hook up sign in / sign out links */
+
+      // Execute navigator.id.request(); when the user clicks "Sign In"
+      var signinLink = document.getElementById('signin');
+      if (signinLink) {
+        signinLink.onclick = function() { navigator.id.request(); };
+      };
+
+      // Execute navigator.id.logout(); when the user clicks "Sign Out"
+      var signoutLink = document.getElementById('signout');
+      if (signoutLink) {
+        signoutLink.onclick = function() { navigator.id.logout(); };
+      };
+    </script>
+  </body>
+</html>
